@@ -62,10 +62,14 @@ pub fn corner_orient(v: m128i) -> Cori {
         vorient = _mm_unpacklo_epi8(vorient, _mm_setzero_si128());
 
         // Multiply each corner by its place value, add adjacent pairs
-        vorient = _mm_madd_epi16(vorient, _mm_set_epi16(729, 243, 81, 27, 9, 3, 1, 0));
+        vorient = _mm_madd_epi16(
+            vorient,
+            _mm_set_epi16(729, 243, 81, 27, 9, 3, 1, 0),
+        );
 
         // Finish the horizontal sum
-        let mut r: i64 = _mm_extract_epi64(vorient, 0) + _mm_extract_epi64(vorient, 1);
+        let mut r: i64 =
+            _mm_extract_epi64(vorient, 0) + _mm_extract_epi64(vorient, 1);
         r += r >> 32;
         r >>= 4;
 

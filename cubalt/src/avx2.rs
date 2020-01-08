@@ -1,3 +1,4 @@
+#![cfg(all(target_feature = "avx", target_feature = "avx2",))]
 #![allow(overflowing_literals)]
 use crate::types::*;
 use std::arch::x86_64::*;
@@ -109,7 +110,10 @@ pub fn xor_edge_orient(v: m256i, eori: Eori) -> m256i {
 
 pub fn corner_orient_raw(v: m256i) -> Cori {
     unsafe {
-        let vori: m256i = _mm256_unpacklo_epi8(_mm256_slli_epi32(v, 3), _mm256_slli_epi32(v, 2));
+        let vori: m256i = _mm256_unpacklo_epi8(
+            _mm256_slli_epi32(v, 3),
+            _mm256_slli_epi32(v, 2),
+        );
         Cori(std::mem::transmute::<i32, u32>(_mm256_movemask_epi8(vori)) >> 16)
     }
 }
@@ -129,7 +133,10 @@ pub fn invert(v: m256i) -> m256i {
         );
         for i in 0..12 {
             let vtrial: m256i = _mm256_set1_epi8(i);
-            let vcorrect: m256i = _mm256_cmpeq_epi8(identity(), _mm256_shuffle_epi8(vperm, vtrial));
+            let vcorrect: m256i = _mm256_cmpeq_epi8(
+                identity(),
+                _mm256_shuffle_epi8(vperm, vtrial),
+            );
             vi = _mm256_or_si256(vi, _mm256_and_si256(vtrial, vcorrect));
         }
 
@@ -157,7 +164,8 @@ pub fn unrank_corner_orient(cori: Cori) -> i64 {
          * - Requires two different shift widths
          * - The multiplier for the 3^0 place is 65536
          */
-        let vpow3_reciprocal: m256i = _mm256_set_epi32(1439, 4316, 12946, 38837, 7282, 21846, 0, 0);
+        let vpow3_reciprocal: m256i =
+            _mm256_set_epi32(1439, 4316, 12946, 38837, 7282, 21846, 0, 0);
         let vshift: m256i = _mm256_set_epi32(4, 4, 4, 4, 0, 0, 0, 0);
 
         // Divide by powers of 3 (1, 3, 9, ..., 729)
@@ -178,7 +186,8 @@ pub fn unrank_corner_orient(cori: Cori) -> i64 {
             vco,
             _mm256_set_epi32(-1, -1, 0x0c080400, -1, -1, -1, -1, 0x0c080400),
         );
-        let mut co: i64 = _mm256_extract_epi64(vco, 2) | _mm256_extract_epi64(vco, 0);
+        let mut co: i64 =
+            _mm256_extract_epi64(vco, 2) | _mm256_extract_epi64(vco, 0);
 
         // Determine the last corner's orientation
         let mut sum: i64 = co + (co >> 32);
