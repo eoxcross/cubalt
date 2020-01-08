@@ -97,7 +97,7 @@ pub fn compose_mirror(a: m256i, b: m256i) -> m256i {
 pub fn xor_edge_orient(v: m256i, eori: Eori) -> m256i {
     unsafe {
         let mut vori: m256i = _mm256_shuffle_epi8(
-            _mm256_set1_epi32(eori.0),
+            _mm256_set1_epi32(std::mem::transmute(eori.0)),
             _mm256_set_epi64x(-1, -1, 0xffffffff01010101, 0),
         );
         vori = _mm256_or_si256(vori, _mm256_set1_epi64x(!0x8040201008040201));
@@ -110,7 +110,7 @@ pub fn xor_edge_orient(v: m256i, eori: Eori) -> m256i {
 pub fn corner_orient_raw(v: m256i) -> Cori {
     unsafe {
         let vori: m256i = _mm256_unpacklo_epi8(_mm256_slli_epi32(v, 3), _mm256_slli_epi32(v, 2));
-        Cori((_mm256_movemask_epi8(vori) as i32) >> 16)
+        Cori(std::mem::transmute::<i32, u32>(_mm256_movemask_epi8(vori)) >> 16)
     }
 }
 
@@ -161,7 +161,7 @@ pub fn unrank_corner_orient(cori: Cori) -> i64 {
         let vshift: m256i = _mm256_set_epi32(4, 4, 4, 4, 0, 0, 0, 0);
 
         // Divide by powers of 3 (1, 3, 9, ..., 729)
-        let vcorient: m256i = _mm256_set1_epi32(cori.0);
+        let vcorient: m256i = _mm256_set1_epi32(std::mem::transmute(cori.0));
         let mut vco: m256i = _mm256_mulhi_epu16(vcorient, vpow3_reciprocal);
         vco = _mm256_srlv_epi32(vco, vshift);
 

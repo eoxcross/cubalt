@@ -44,7 +44,7 @@ pub fn compose_edge(a: m128i, b: m128i) -> m128i {
 pub fn xor_edge_orient(v: m128i, eori: Eori) -> m128i {
     unsafe {
         let mut vori: m128i = _mm_shuffle_epi8(
-            _mm_set1_epi32(eori.0),
+            _mm_set1_epi32(std::mem::transmute(eori.0)),
             _mm_set_epi64x(0xffffffff01010101, 0),
         );
         vori = _mm_or_si128(vori, _mm_set1_epi64x(!0x8040201008040201));
@@ -67,7 +67,11 @@ pub fn corner_orient(v: m128i) -> Cori {
         // Finish the horizontal sum
         let mut r: i64 = _mm_extract_epi64(vorient, 0) + _mm_extract_epi64(vorient, 1);
         r += r >> 32;
+        r >>= 4;
 
-        Cori((r >> 4) as i32)
+        debug_assert!(r < u32::max_value() as i64);
+
+        // FIXME transmute?
+        Cori(r as u32)
     }
 }
