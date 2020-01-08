@@ -16,12 +16,23 @@ pub mod sse;
 
 pub fn toplevel() {
     println!("toplevel: hi");
-    println!("{:?}", cube::Cube::identity().0);
-    for edge in cube::Cube::identity().edges() {
+    let cube = cube::Cube::identity();
+    println!("{:?}", cube.0);
+    for edge in cube.edges() {
         print!("{:?} | ", edge.0);
     }
     println!();
-    for corner in cube::Cube::identity().corners() {
+    for corner in cube.corners() {
+        print!("{:?} | ", corner.0);
+    }
+    println!();
+    let cube_inv = !cube;
+    println!("{:?}", cube_inv.0);
+    for edge in cube_inv.edges() {
+        print!("{:?} | ", edge.0);
+    }
+    println!();
+    for corner in cube_inv.corners() {
         print!("{:?} | ", corner.0);
     }
     println!();
