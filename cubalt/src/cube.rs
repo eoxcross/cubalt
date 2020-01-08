@@ -28,46 +28,75 @@ use crate::types::*;
 ///   C = corner index (0..7)
 #[repr(transparent)]
 #[derive(Debug, Clone)]
-pub struct Cube(pub m256i);
+pub struct Cube(m256i);
 
+/// The low 128-bit lane of the m256 that stores edge state.
 #[repr(transparent)]
 #[derive(Debug, Clone)]
-pub struct Edges(pub m128i);
+pub struct Edges(m128i);
 
+/// The high 128-bit lane of the m256 that stores corner state.
 #[repr(transparent)]
 #[derive(Debug, Clone)]
-pub struct Corners(pub m128i);
+pub struct Corners(m128i);
+
+/// A single edge state.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct Edge(u8);
+
+/// A single corner state.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct Corner(u8);
 
 impl Cube {
     pub fn new(v: m256i) -> Self {
         Self(v)
     }
 
+    /// __m128i ev() const
     #[inline(always)]
     fn edges(&self) -> &Edges {
-        let arr = unsafe { std::mem::transmute::<&Cube, &[Edges; 2]>(self) };
-        &arr[0]
+        unsafe { 
+            let arr = std::mem::transmute::<&m256i, &[m128i; 2]>(&self.0);
+            let ret = std::mem::transmute::<&m128i, &Edges>(&arr[0]);
+            ret
+        }
     }
 
+    /// __m128i& ev()
     #[inline(always)]
     fn edges_mut(&mut self) -> &mut Edges {
-        let arr = unsafe { std::mem::transmute::<&mut Cube, &mut [Edges; 2]>(self) };
-        &mut arr[0]
+        unsafe { 
+            let arr = std::mem::transmute::<&mut m256i, &mut [m128i; 2]>(&mut self.0);
+            let ret = std::mem::transmute::<&mut m128i, &mut Edges>(&mut arr[0]);
+            ret
+        }
     }
 
+    /// __m128i cv() const
     #[inline(always)]
     fn corners(&self) -> &Corners {
-        let arr = unsafe { std::mem::transmute::<&Cube, &[Corners; 2]>(self) };
-        &arr[1]
+        unsafe { 
+            let arr = std::mem::transmute::<&m256i, &[m128i; 2]>(&self.0);
+            let ret = std::mem::transmute::<&m128i, &Corners>(&arr[1]);
+            ret
+        }
     }
 
+    /// __m128i cv() const
     #[inline(always)]
     fn corners_mut(&mut self) -> &mut Corners {
-        let arr = unsafe { std::mem::transmute::<&mut Cube, &mut [Corners; 2]>(self) };
-        &mut arr[1]
+        unsafe { 
+            let arr = std::mem::transmute::<&mut m256i, &mut [m128i; 2]>(&mut self.0);
+            let ret = std::mem::transmute::<&mut m128i, &mut Corners>(&mut arr[1]);
+            ret
+        }
     }
 
-    #[inline(always)]
+    /// A mutable reference to the low half of the m128 that actually stores corner state.
+    /// u64()[2]
     fn corners_64_mut(&mut self) -> &mut u64 {
         let arr = unsafe { std::mem::transmute::<&mut Cube, &mut [u64; 4]>(self) };
         &mut arr[2]

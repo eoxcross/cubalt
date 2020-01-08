@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 pub mod types;
 #[macro_use]
 pub mod macros;
