@@ -103,12 +103,31 @@ impl Cube {
     pub fn corner_orient_raw(&self) -> Cori {
         avx2::corner_orient_raw(self.0)
     }
+
+    pub fn compose(&self, other: &Self) -> Self {
+        Self(avx2::compose(self.0, other.0))
+    }
+
+    pub fn compose_mirror(&self, other: &Self) -> Self {
+        Self(avx2::compose_mirror(self.0, other.0))
+    }
+
+    pub fn invert(&self) -> Self {
+        Cube::from_raw_m256(avx2::invert(self.0))
+    }
 }
 
 impl std::ops::Not for Cube {
     type Output = Self;
     fn not(self) -> Self {
-        Cube::from_raw_m256(avx2::invert(self.0))
+        self.invert()
+    }
+}
+
+impl std::ops::Mul for Cube {
+    type Output = Self;
+    fn mul(self, other: Self) -> Self {
+        self.compose(&other)
     }
 }
 
